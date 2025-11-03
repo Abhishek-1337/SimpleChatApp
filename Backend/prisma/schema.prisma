@@ -23,4 +23,12 @@ model Room {
   Id    Int   @id @default(autoincrement())
   slug  String
   user  User[]
+  messages Message[]
+}
+
+model Message {
+  Id    String    @id @default(uuid())
+  text  String 
+  room  Room    @relation(fields: [roomId], references: [id])
+  roomId String
 }

@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useState } from "react";
 
 const Register = ({setUsername} : 
@@ -13,7 +12,7 @@ const Register = ({setUsername} :
         try{
             // const res = await axios.post('http://localhost:3000/register', {input});
 
-            localStorage.setItem("username", input);
+            sessionStorage.setItem("username", input);
             setUsername(input);
         }
         catch(ex: any) {
@@ -33,6 +32,11 @@ const Register = ({setUsername} :
             placeholder="Enter user-name" 
             className="px-2 mr-2 outline-2 rounded-md"
             onChange={(e) => handleInputChange(e)}
+            onKeyDown={(e) => {
+                if(e.key === 'Enter') {
+                    registerUser();
+                }
+            }}
             value={input}
             />
             <button 

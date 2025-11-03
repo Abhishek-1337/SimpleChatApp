@@ -22,10 +22,7 @@ app.post("/register", async (req, res) => {
         });
         return;
     }
-    console.log(userRooms);
-    console.log(username);
     const checkUser = userRooms.find((obj) => obj.username === username);
-    console.log(checkUser);
     if (checkUser) {
         res.status(400).json({
             message: "username already exist."
