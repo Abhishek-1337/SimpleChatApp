@@ -1,8 +1,10 @@
+import axios from "axios";
 import { useState } from "react";
 
 const Register = ({setUsername} : 
     {setUsername: React.Dispatch<React.SetStateAction<string>>}) => {
     const [input, setInput] = useState("");
+    const [error, setError] = useState<{isError: boolean, message: string}>({isError: false, message: ""});
 
     const registerUser = async () => {
         if(!input) {
@@ -10,12 +12,13 @@ const Register = ({setUsername} :
             return;
         }
         try{
-            // const res = await axios.post('http://localhost:3000/register', {input});
+            const res = await axios.post('http://localhost:3000/register', {username: input});
 
             sessionStorage.setItem("username", input);
             setUsername(input);
         }
         catch(ex: any) {
+            setError({isError: true, message: ex?.response.data.message});
             console.log(ex?.response.data.message);
         }
 
@@ -43,6 +46,7 @@ const Register = ({setUsername} :
             className="bg-blue-500 text-white px-2 rounded-md cursor-pointer"
             onClick={registerUser}
             >Register</button>
+            {(error.isError && !input) && <p className="text-red-500">{error.message}</p>}
         </div>
     )
 }

@@ -13,8 +13,8 @@ const Room = () => {
     const [text, setText] = useState<string>("");
     const [messages, setMessages] = useState<Message[]>([]);
 
+    const username = sessionStorage.getItem("username");
     const sendMessage = async () => {
-        const username = sessionStorage.getItem("username");
         try {
             const res = await axios.post(`http://localhost:3000/${slug}/new`, {
                 message: text,
@@ -44,13 +44,16 @@ const Room = () => {
         <ChatLayout>
             <div className="flex flex-col h-screen">
                 <div className="flex-1">
-                    <ul className="flex flex-col-reverse h-full p-4 gap-4">
+                    <ul className="flex flex-col justify-end h-full p-4 gap-4">
                         {
                             messages.map((m, index) => {
                                 return (
-                                    <div className="flex gap-2 items-center">
+                                    <div 
+                                    className={`flex gap-2 items-center ${username === m.username ? 'justify-start flex-row-reverse': ''}`}
+                                    key={`${Math.floor(Math.random()*10)}-index`}
+                                    >
                                         <div className="text-sm bg-blue-700 rounded-full p-1 text-white">{m.username.slice(0,3)}</div>
-                                        <li key={`${Math.floor(Math.random()*10)}-index`}>{m.text}</li>
+                                        <li >{m.text}</li>
                                     </div>
                                 )
                             })
@@ -63,6 +66,7 @@ const Room = () => {
                     placeholder="Type your message" 
                     className="px-2 mr-2 outline-2 py-2 rounded-md outline-slate-600 flex-1"
                     onChange={(e) => setText(e.target.value)}
+                    value={text}
                     // onKeyDown={(e) => e.key === 'Enter' ? }
                     />
                     <button

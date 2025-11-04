@@ -34,13 +34,19 @@ app.post("/register", async (req, res) => {
         return;
     }
 
+    const user = await prismaClient.user.create({
+        data: {
+            username
+        }
+    });
     userRooms.push({
         username,
         rooms: []
     });
 
     res.status(201).json({
-        message: "User created"
+        message: "User created",
+        user
     });
     
 });
