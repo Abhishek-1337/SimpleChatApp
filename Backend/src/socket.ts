@@ -24,24 +24,30 @@ io.on("connection", async (socket) => {
     });
 
     if(!user) {
-        console.log("hello2");
         socket.disconnect();
         return;
     }
 
     socket.on("disconnect", () => {
-      console.log("hello")
+      const index = userRooms.findIndex((user) => user.socketId === socket.id);
+      if(index !== -1){
+        userRooms.splice(index, 1);
+      }
     });
 
     userRooms.push({
         username,
         rooms: [],
-        socket
+        socketId: socket.id
     });
 
-    
+    socket.onAny((event, ...args) => {
+  console.log("🔥 Event received:", event, args);
+});
+
     socket.on("join-room", (obj) => {
-        const user = userRooms.find((user) => user.username === obj.username)
+        console.log("joiin")
+        const user = userRooms.find((user) => user.socketId === socket.id);
         user?.rooms.push(obj.slug);
     });
     console.log(userRooms);

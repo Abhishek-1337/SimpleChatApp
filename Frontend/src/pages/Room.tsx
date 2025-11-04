@@ -2,8 +2,10 @@ import { useParams } from "react-router-dom";
 import ChatLayout from "../components/layout/ChatLayout";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import useSocket from "../hooks/useSocket";
 
 type Message = {
+    Id: string;
     text: string;
     username: string;
 }
@@ -12,9 +14,20 @@ const Room = () => {
     const {slug} = useParams();
     const [text, setText] = useState<string>("");
     const [messages, setMessages] = useState<Message[]>([]);
+    const { socket, loading } = useSocket();
 
-    const username = sessionStorage.getItem("username");
+    useEffect(() => {
+        console.log("conn")
+        if(socket && !loading){
+            console.log(socket)
+            socket.emit("message", "Hey bitch");
+
+            socket.emit("join-room", {slug})
+        }
+    }, [socket, loading]);
+
     const sendMessage = async () => {
+        const username = sessionStorage.getItem("username");
         try {
             const res = await axios.post(`http://localhost:3000/${slug}/new`, {
                 message: text,
@@ -48,10 +61,7 @@ const Room = () => {
                         {
                             messages.map((m, index) => {
                                 return (
-                                    <div 
-                                    className={`flex gap-2 items-center ${username === m.username ? 'justify-start flex-row-reverse': ''}`}
-                                    key={`${Math.floor(Math.random()*10)}-index`}
-                                    >
+                                    <div className="flex gap-2 items-center" key={m.Id}>
                                         <div className="text-sm bg-blue-700 rounded-full p-1 text-white">{m.username.slice(0,3)}</div>
                                         <li >{m.text}</li>
                                     </div>

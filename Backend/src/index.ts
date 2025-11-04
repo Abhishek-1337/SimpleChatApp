@@ -1,16 +1,14 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
-import { UserRooms } from "./types";
 import cors from "cors";
+import { registerSocket } from "./socket";
 
 const app = express();
 
 app.use(cors());
 
 app.use(express.json());
-const prismaClient = new PrismaClient();
-
-const userRooms: UserRooms[] = [];
+export const prismaClient = new PrismaClient();
 
 app.get("/", (req, res) => {
     res.send("hello");
@@ -26,7 +24,11 @@ app.post("/register", async (req, res) => {
         return;
     }
 
-    const checkUser = userRooms.find((obj) => obj.username === username);
+    const checkUser = await prismaClient.user.findFirst({
+        where: {
+            username
+        }
+    });
     if(checkUser) {
         res.status(400).json({
             message: "username already exist."
@@ -38,10 +40,6 @@ app.post("/register", async (req, res) => {
         data: {
             username
         }
-    });
-    userRooms.push({
-        username,
-        rooms: []
     });
 
     res.status(201).json({
@@ -68,6 +66,7 @@ app.get('/:slug/chat', async (req, res) => {
             slug: true,
             messages: {
                 select : {
+                    Id: true,
                     text: true,
                     username: true
                 }
@@ -117,4 +116,6 @@ app.post("/:slug/new", async (req, res) => {
     });
 })
 
-app.listen(3000);
+export const server = app.listen(3000);
+
+registerSocket(server);

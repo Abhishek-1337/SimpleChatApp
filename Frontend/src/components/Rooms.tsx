@@ -17,7 +17,7 @@ const Rooms = React.memo(() => {
                 setRooms(res.data.rooms);
             }
             catch(ex: any){
-                console.log(ex.response.data.message);
+                console.log(ex);
             }
         }
 
@@ -30,9 +30,7 @@ const Rooms = React.memo(() => {
                 {
                     rooms.map((room: Room, index: number) => {
                         return (
-                            <Link to={`/room/${room.slug}`} key={`${room.slug}-${index}`}>
-                                <li className="border-2 rounded-md bg-white px-4 mb-4 cursor-pointer" >{room.slug}</li>
-                            </Link>
+                            <Link to={`/room/${room.slug}`} key={`${room.slug}-${index}`}><li className="border-2 rounded-md bg-white px-4 mb-4 cursor-pointer" >{room.slug}</li></Link>
                         )
                     })
                 }
