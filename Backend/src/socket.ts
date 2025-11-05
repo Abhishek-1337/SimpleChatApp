@@ -24,6 +24,7 @@ io.on("connection", async (socket) => {
     });
 
     if(!user) {
+        console.log("disconnected");
         socket.disconnect();
         return;
     }
@@ -41,19 +42,44 @@ io.on("connection", async (socket) => {
         socketId: socket.id
     });
 
-    socket.onAny((event, ...args) => {
-  console.log("🔥 Event received:", event, args);
-});
-
     socket.on("join-room", (obj) => {
-        console.log("joiin")
         const user = userRooms.find((user) => user.socketId === socket.id);
         user?.rooms.push(obj.slug);
+        console.log(userRooms);
     });
     console.log(userRooms);
 
-    socket.on("message", (msg) => {
-        console.log(msg);
+    socket.on("message", async (obj) => {
+
+        const room = await prismaClient.room.findFirst({
+            where: {
+                slug: obj.slug
+            }
+        });
+
+        if(!room) {
+            io.to(socket.id).emit("message", { error: true, message: "Invalid room name."});
+            return;
+        }
+        const message = await prismaClient.message.create({
+            data: {
+                text: obj.text,
+                username,
+                roomId: room.Id
+            }
+        });
+        for(let user of userRooms) {
+            if(user.rooms.includes(obj.slug)){
+                // if(user.socketId === socket.id){
+                //     continue;
+                // }
+                io.to(user.socketId).emit("message", {
+                    Id: message.Id,
+                    text: obj.text,
+                    username
+                });
+            }
+        }
     });
 
     

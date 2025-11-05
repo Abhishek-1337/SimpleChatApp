@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import ChatLayout from "../components/layout/ChatLayout";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import useSocket from "../hooks/useSocket";
+import { io, Socket } from "socket.io-client";
 
 type Message = {
     Id: string;
@@ -14,22 +14,51 @@ const Room = () => {
     const {slug} = useParams();
     const [text, setText] = useState<string>("");
     const [messages, setMessages] = useState<Message[]>([]);
-    const { socket, loading } = useSocket();
+    const [socket, setSocket] = useState<Socket | null>(null);
+    const [username, setUsername] = useState<string | null>("");
+    console.log(messages);
+    useEffect(() => {
+        const soc = io("http://localhost:3000", {
+            transports: ["websocket"],
+            auth: {
+                username
+            }
+        });
+
+        setSocket(soc);
+
+        soc.on("connect", () => {
+            console.log("Connected", soc.id);
+        });
+
+        soc.on("message", (obj) => {
+            console.log(obj);
+            if(obj?.error){
+                return;
+            }
+            setMessages((prev) => [...prev, obj]);
+        });
+
+        return () => {
+            soc.disconnect();
+        }
+    }, [username]);
 
     useEffect(() => {
-        console.log("conn")
-        if(socket && !loading){
-            console.log(socket)
-            socket.emit("message", "Hey bitch");
-
-            socket.emit("join-room", {slug})
+        if(!socket) return;
+        if(socket.connected){
+            socket.emit("join-room", {slug});
         }
-    }, [socket, loading]);
+
+    }, [socket?.connected]);
 
     const sendMessage = async () => {
-        const username = sessionStorage.getItem("username");
+        if(socket?.connected) {
+            socket.emit("message", {slug, text});
+        }
+
         try {
-            const res = await axios.post(`http://localhost:3000/${slug}/new`, {
+            await axios.post(`http://localhost:3000/${slug}/new`, {
                 message: text,
                 username
             });
@@ -50,18 +79,18 @@ const Room = () => {
                 console.log(ex);
             }
         }
-
+        setUsername(sessionStorage.getItem("username"));
         getMessages();
     }, []);
     return (
         <ChatLayout>
             <div className="flex flex-col h-screen">
-                <div className="flex-1">
+                <div className="flex-1 overflow-y-scroll">
                     <ul className="flex flex-col justify-end h-full p-4 gap-4">
                         {
                             messages.map((m, index) => {
                                 return (
-                                    <div className="flex gap-2 items-center" key={m.Id}>
+                                    <div className={`flex gap-2 items-center ${m.username === username ? 'flex-row-reverse' : ''}`} key={m.Id}>
                                         <div className="text-sm bg-blue-700 rounded-full p-1 text-white">{m.username.slice(0,3)}</div>
                                         <li >{m.text}</li>
                                     </div>

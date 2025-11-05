@@ -12,7 +12,7 @@ const Register = ({setUsername} :
             return;
         }
         try{
-            const res = await axios.post('http://localhost:3000/register', {username: input});
+            await axios.post('http://localhost:3000/register', {username: input});
 
             sessionStorage.setItem("username", input);
             setUsername(input);

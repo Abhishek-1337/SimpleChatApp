@@ -2,6 +2,7 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import cors from "cors";
 import { registerSocket } from "./socket";
+import * as chatController from "./controllers/chat.controller";
 
 const app = express();
 
@@ -87,34 +88,7 @@ app.get('/:slug/chat', async (req, res) => {
 
 });
 
-app.post("/:slug/new", async (req, res) => {
-    const { message, username } = req.body;
-    const slug = req.params.slug;
-    const room = await prismaClient.room.findFirst({
-        where: {
-            slug
-        }
-    });
-
-    if(!room) {
-        res.status(404).json({
-            message: "Room not found."
-        });
-        return;
-    }
-
-    await prismaClient.message.create({
-        data: {
-            text: message,
-            username,
-            roomId: room.Id
-        }
-    });
-
-    res.status(201).json({
-        message: "Message is saved."
-    });
-})
+app.post("/:slug/new", chatController.createChat);
 
 export const server = app.listen(3000);
 
