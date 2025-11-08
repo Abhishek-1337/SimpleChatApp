@@ -4,7 +4,7 @@ import MainLayout from "./MainLayout";
 const ChatLayout = ({children}: {children: ReactNode}) => {
     return (
         <MainLayout>
-            <div className="bg-slate-300 w-[50%] min-h-screen"> 
+            <div className="bg-slate-300 w-lg self-start max-h-screen"> 
                 {children}
             </div>
         </MainLayout>

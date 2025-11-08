@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import ChatLayout from "../components/layout/ChatLayout";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { io, Socket } from "socket.io-client";
 
@@ -12,10 +12,11 @@ type Message = {
 
 const Room = () => {
     const {slug} = useParams();
-    const [text, setText] = useState<string>("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [socket, setSocket] = useState<Socket | null>(null);
     const [username, setUsername] = useState<string | null>("");
+    const [text, setText] = useState<string>("");
+
     console.log(messages);
     useEffect(() => {
         const soc = io("http://localhost:3000", {
@@ -56,24 +57,26 @@ const Room = () => {
         if(socket?.connected) {
             socket.emit("message", {slug, text});
         }
+        setText("");
 
-        try {
-            await axios.post(`http://localhost:3000/${slug}/new`, {
-                message: text,
-                username
-            });
-            setText("");
-        }
-        catch(ex){
-            console.log(ex);
-        }
+        // try {
+        //     await axios.post(`http://localhost:3000/${slug}/new`, {
+        //         message: text,
+        //         username
+        //     });
+        //     setText("");
+        // }
+        // catch(ex){
+        //     console.log(ex);
+        // }
     }
 
     useEffect(() => {
         const getMessages = async () => {
             try {
                 const res = await axios.get(`http://localhost:3000/${slug}/chat`);
-                setMessages(res.data.chat);
+                const messages = res.data.chat.reverse();
+                setMessages(messages);
             }
             catch(ex){
                 console.log(ex);
@@ -84,9 +87,8 @@ const Room = () => {
     }, []);
     return (
         <ChatLayout>
-            <div className="flex flex-col h-screen">
-                <div className="flex-1 overflow-y-scroll">
-                    <ul className="flex flex-col justify-end h-full p-4 gap-4">
+            <div className="max-h-screen">
+                    <ul className="flex flex-col-reverse p-4 pb-20 h-screen overflow-y-scroll">
                         {
                             messages.map((m, index) => {
                                 return (
@@ -98,12 +100,11 @@ const Room = () => {
                             })
                         }
                     </ul>
-                </div>
-                <div className="w-full flex mb-2 p-4">
+                <div className="flex mb-0 p-4 pt-1 absolute bottom-0 w-lg bg-slate-300 rounded-lg">
                     <input 
                     type="text" 
                     placeholder="Type your message" 
-                    className="px-2 mr-2 outline-2 py-2 rounded-md outline-slate-600 flex-1"
+                    className="px-2 mr-2 outline-2 py-2 rounded-md outline-slate-600 w-full bg-white"
                     onChange={(e) => setText(e.target.value)}
                     value={text}
                     // onKeyDown={(e) => e.key === 'Enter' ? }

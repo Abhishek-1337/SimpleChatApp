@@ -46,7 +46,7 @@ const Register = ({setUsername} :
             className="bg-blue-500 text-white px-2 rounded-md cursor-pointer"
             onClick={registerUser}
             >Register</button>
-            {(error.isError && !input) && <p className="text-red-500">{error.message}</p>}
+            {(error.isError && !input) && <p className="text-red-500">Username already taken.</p>}
         </div>
     )
 }
