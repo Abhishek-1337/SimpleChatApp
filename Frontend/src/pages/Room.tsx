@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import ChatLayout from "../components/layout/ChatLayout";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { io, Socket } from "socket.io-client";
 
@@ -8,6 +8,7 @@ type Message = {
     Id: string;
     text: string;
     username: string;
+    color: string;
 }
 
 const Room = () => {
@@ -17,7 +18,6 @@ const Room = () => {
     const [username, setUsername] = useState<string | null>("");
     const [text, setText] = useState<string>("");
 
-    console.log(messages);
     useEffect(() => {
         const soc = io("http://localhost:3000", {
             transports: ["websocket"],
@@ -37,7 +37,12 @@ const Room = () => {
             if(obj?.error){
                 return;
             }
-            setMessages((prev) => [...prev, obj]);
+
+            setMessages((prev) => {
+                obj.color = prev.find((message) => message.username === obj.username)?.color;
+                console.log(obj);
+                return [obj, ...prev]
+            });
         });
 
         return () => {
@@ -46,8 +51,10 @@ const Room = () => {
     }, [username]);
 
     useEffect(() => {
+        console.log(socket);
         if(!socket) return;
         if(socket.connected){
+            console.log("yo");
             socket.emit("join-room", {slug});
         }
 
@@ -88,12 +95,12 @@ const Room = () => {
     return (
         <ChatLayout>
             <div className="max-h-screen">
-                    <ul className="flex flex-col-reverse p-4 pb-20 h-screen overflow-y-scroll">
+                    <ul className="flex flex-col-reverse p-4 pb-20 gap-4 h-screen overflow-y-scroll">
                         {
                             messages.map((m, index) => {
                                 return (
                                     <div className={`flex gap-2 items-center ${m.username === username ? 'flex-row-reverse' : ''}`} key={m.Id}>
-                                        <div className="text-sm bg-blue-700 rounded-full p-1 text-white">{m.username.slice(0,3)}</div>
+                                        <div className={`text-sm rounded-full p-1 text-white ${m.color === "" ? "bg-blue-700" : "bg-[" +m.color +"]"}`}>{m.username.slice(0,3)}</div>
                                         <li >{m.text}</li>
                                     </div>
                                 )

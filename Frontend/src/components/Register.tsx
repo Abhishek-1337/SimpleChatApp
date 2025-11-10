@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
+import { ColoredAvatar } from "../utils/coloredAvatar";
 
 const Register = ({setUsername} : 
     {setUsername: React.Dispatch<React.SetStateAction<string>>}) => {
@@ -12,7 +13,9 @@ const Register = ({setUsername} :
             return;
         }
         try{
-            await axios.post('http://localhost:3000/register', {username: input});
+            const color = ColoredAvatar();
+            console.log(color);
+            await axios.post('http://localhost:3000/register', {username: input, color});
 
             sessionStorage.setItem("username", input);
             setUsername(input);

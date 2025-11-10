@@ -17,6 +17,7 @@ model User {
   Id        Int     @id @default(autoincrement())
   username  String
   room      Room[]
+  color     String  @default("")
 }
 
 model Room {

@@ -16,7 +16,7 @@ app.get("/", (req, res) => {
 } );
 
 app.post("/register", async (req, res) => {
-    const { username }: { username: string } = req.body;
+    const { username, color }: { username: string, color: string } = req.body;
 
     if(!username) {
         res.status(400).json({
@@ -39,7 +39,8 @@ app.post("/register", async (req, res) => {
 
     const user = await prismaClient.user.create({
         data: {
-            username
+            username,
+            color
         }
     });
 
@@ -71,11 +72,24 @@ app.get('/:slug/chat', async (req, res) => {
                     text: true,
                     username: true
                 }
+            },
+            user: {
+                select: {
+                    Id: true,
+                    username: true,
+                    color: true
+                }
             }
         }
     });
+    const chat = room?.messages.map((message) => {
+        return {
+            ...message,
+            color: room.user.find((user) => user.username === message.username)?.color ?? ""
+        }
+    });
 
-    if(!room){
+    if(!chat){
         res.status(400).json({
             message: "Room not found."
         });
@@ -83,7 +97,7 @@ app.get('/:slug/chat', async (req, res) => {
     }
 
     res.status(200).json({
-        chat:room.messages
+        chat
     });
 
 });

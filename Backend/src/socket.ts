@@ -50,6 +50,7 @@ io.on("connection", async (socket) => {
     console.log(userRooms);
 
     socket.on("message", async (obj) => {
+        console.log(obj);
 
         const room = await prismaClient.room.findFirst({
             where: {
